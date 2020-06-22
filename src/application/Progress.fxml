@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.jfoenix.controls.JFXButton?>
+<?import com.jfoenix.controls.JFXProgressBar?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane prefHeight="270.0" prefWidth="500.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.ProgressController">
+    <children>
+        <VBox prefHeight="270.0" prefWidth="500.0">
+            <children>
+                <HBox prefHeight="45.0" prefWidth="500.0" spacing="10.0" style="-fx-background-color: #1565c0;">
+                    <children>
+                        <Label alignment="TOP_LEFT" prefHeight="96.0" prefWidth="500.0" text="Job Status" textFill="#f8f6f6">
+                            <font>
+                                <Font size="18.0" />
+                            </font>
+                        </Label>
+                    </children>
+                    <padding>
+                        <Insets bottom="15.0" left="12.0" right="12.0" top="15.0" />
+                    </padding>
+                </HBox>
+            <VBox prefHeight="168.0" prefWidth="500.0" spacing="5.0">
+               <children>
+                  <Label fx:id="progressLabel" prefHeight="17.0" prefWidth="378.0" />
+                  <Label fx:id="progressStatusLabel" prefHeight="29.0" prefWidth="55.0" />
+                        <JFXProgressBar fx:id="progressBar" blendMode="ADD" prefHeight="35.0" prefWidth="484.0" progress="0.0" style="-fx-background-color: #2b54d0;" />
+               </children>
+               <padding>
+                  <Insets bottom="15.0" left="12.0" right="12.0" top="15.0" />
+               </padding>
+            </VBox>
+            </children>
+        </VBox>
+      <Separator layoutY="200.0" prefHeight="43.0" prefWidth="500.0" />
+            <JFXButton fx:id="refreshButton" ellipsisString="" layoutX="371.0" layoutY="231.0" onAction="#refreshStatus" prefHeight="29.0" prefWidth="104.0" style="-fx-background-color: #1565c0#1565c0;" textFill="WHITE" AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="231.0">
+         <padding>
+            <Insets left="20.0" right="20.0" />
+         </padding></JFXButton>
+    </children>
+</AnchorPane>

@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.jfoenix.controls.JFXButton?>
+<?import com.jfoenix.controls.JFXCheckBox?>
+<?import com.jfoenix.controls.JFXRadioButton?>
+<?import com.jfoenix.controls.JFXTextField?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+<?import org.controlsfx.control.MaskerPane?>
+
+<AnchorPane prefHeight="630.0" prefWidth="870.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.DataExportController">
+    <children>
+      <VBox prefHeight="500.0" prefWidth="870.0">
+         <children>
+            <HBox prefHeight="63.0" prefWidth="870.0" spacing="10.0" style="-fx-background-color: #1565c0;">
+               <children>
+                  <ImageView fitHeight="34.0" fitWidth="36.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../image/logo.png" />
+                     </image>
+                     <HBox.margin>
+                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                     </HBox.margin>
+                  </ImageView>
+                  <Label prefHeight="32.0" prefWidth="585.0" text="IA Child Table Data Export" textFill="#f2eeee">
+                     <font>
+                        <Font size="24.0" />
+                     </font>
+                     <HBox.margin>
+                        <Insets bottom="5.0" top="5.0" />
+                     </HBox.margin>
+                  </Label>
+               </children>
+               <padding>
+                  <Insets bottom="10.0" left="20.0" right="10.0" top="10.0" />
+               </padding>
+            </HBox>
+            <Label prefHeight="38.0" prefWidth="672.0" text="Input parameters">
+               <font>
+                  <Font size="18.0" />
+               </font>
+               <padding>
+                  <Insets bottom="15.0" left="25.0" right="20.0" top="20.0" />
+               </padding>
+            </Label>
+                <VBox prefHeight="389.0" prefWidth="900.0" spacing="10.0">
+                    <children>
+                        <HBox prefHeight="69.0" prefWidth="676.0" spacing="25.0">
+                            <children>
+                                <JFXTextField fx:id="dataPathTextField" editable="false" focusTraversable="false" pickOnBounds="false" prefHeight="39.0" prefWidth="677.0" promptText="Choose Input Csv File ">
+                                    <HBox.margin>
+                                        <Insets />
+                                    </HBox.margin>
+                                    <font>
+                                        <Font size="14.0" />
+                                    </font>
+                                </JFXTextField>
+                                <JFXButton fx:id="dataPathBrowseBtn" focusTraversable="false" onAction="#getDataPath" prefHeight="61.0" prefWidth="120.0" style="-fx-background-color: #1565c0;" text="Browse" textFill="#fcfafa">
+                                    <font>
+                                        <Font size="18.0" />
+                                    </font>
+                           <padding>
+                              <Insets left="20.0" right="20.0" />
+                           </padding>
+                                </JFXButton>
+                            </children>
+                            <padding>
+                                <Insets bottom="15.0" left="15.0" top="15.0" />
+                            </padding>
+                        </HBox>
+                        <HBox prefHeight="68.0" prefWidth="677.0" spacing="25.0">
+                            <children>
+                                <JFXTextField fx:id="outputPathTextField" editable="false" focusTraversable="false" prefHeight="38.0" prefWidth="677.0" promptText="Choose Output Path">
+                                    <padding>
+                                        <Insets bottom="15.0" left="12.0" right="12.0" top="15.0" />
+                                    </padding>
+                                    <font>
+                                        <Font size="14.0" />
+                                    </font>
+                                </JFXTextField>
+                                <JFXButton fx:id="outputPathBrowseBtn" focusTraversable="false" onAction="#getOutputPath" prefHeight="61.0" prefWidth="120.0" style="-fx-background-color: #1565c0;" text="Browse" textFill="#fcf7f7">
+                                    <font>
+                                        <Font size="18.0" />
+                                    </font>
+                           <padding>
+                              <Insets left="20.0" right="20.0" />
+                           </padding>
+                                </JFXButton>
+                            </children>
+                            <padding>
+                                <Insets bottom="15.0" left="15.0" top="15.0" />
+                            </padding>
+                        </HBox>
+                          <JFXCheckBox fx:id="refactorFile" checkedColor="#1565c0" focusTraversable="false" prefHeight="10.0" prefWidth="115.0" text="Refactor">
+                     <padding>
+                        <Insets left="5.0" />
+                     </padding>
+                     <font>
+                        <Font size="14.0" />
+                     </font>
+                  </JFXCheckBox>
+                  <VBox prefHeight="20.0" prefWidth="858.0">
+                     <children>
+                        <HBox prefHeight="30.0" prefWidth="825.0" style="-fx-background-color: #E6E8F5;">
+                           <children>
+                                      <Label fx:id="noteId" prefHeight="15.0" prefWidth="36.0" text="Note :">
+                                          <font>
+                                              <Font name="System Bold" size="12.0" />
+                                          </font>
+                                      </Label>
+                              <Label fx:id="noteId1" layoutX="10.0" layoutY="10.0" prefHeight="15.0" prefWidth="635.0" text="Please choose the refactor check box when the file content need to change  \&quot; to &quot;&quot;" textFill="#3d4146c7">
+                                 <font>
+                                    <Font size="11.0" />
+                                 </font>
+                              </Label>
+                           </children>
+                           <padding>
+                              <Insets bottom="7.0" left="8.0" right="12.0" />
+                           </padding>
+                           <VBox.margin>
+                              <Insets left="15.0" right="20.0" top="4.0" />
+                           </VBox.margin>
+                        </HBox>
+                     </children>
+                  </VBox>
+                        <HBox prefHeight="67.0" prefWidth="858.0" spacing="10.0">
+                            <children>
+                                <Label prefHeight="48.0" prefWidth="198.0" text="Parent Table Last Column Name ">
+                           <padding>
+                              <Insets bottom="15.0" left="3.0" top="15.0" />
+                           </padding>
+                           <font>
+                              <Font size="14.0" />
+                           </font>
+                           <HBox.margin>
+                              <Insets />
+                           </HBox.margin>
+                        </Label>
+                                <JFXTextField fx:id="mainTableTo" alignment="TOP_LEFT" focusTraversable="false" layoutX="415.0" layoutY="10.0" prefHeight="25.0" prefWidth="481.0">
+                                    <padding>
+                                        <Insets bottom="15.0" left="12.0" right="12.0" top="15.0" />
+                                    </padding>
+                           <HBox.margin>
+                              <Insets top="6.0" />
+                           </HBox.margin>
+                                </JFXTextField>
+                            </children>
+                     <padding>
+                        <Insets bottom="10.0" left="12.0" right="12.0" top="15.0" />
+                     </padding>
+                        </HBox>
+                  <VBox prefHeight="12.0" prefWidth="170.0">
+                     <children>
+                        <Label prefHeight="20.0" prefWidth="146.0" text="Choose Output Type :">
+                           <padding>
+                              <Insets bottom="15.0" right="15.0" top="12.0" />
+                           </padding>
+                           <VBox.margin>
+                              <Insets left="15.0" />
+                           </VBox.margin>
+                           <font>
+                              <Font size="14.0" />
+                           </font>
+                        </Label>
+                        <HBox prefHeight="18.0" prefWidth="880.0">
+                           <children>
+                              <JFXRadioButton fx:id="excelFile" focusTraversable="false" onAction="#onClickExcel" prefHeight="35.0" prefWidth="109.0" text="Excel File">
+                                 <HBox.margin>
+                                    <Insets />
+                                 </HBox.margin>
+                              </JFXRadioButton>
+                              <JFXRadioButton fx:id="multipleCsvFIle" focusTraversable="false" layoutX="10.0" layoutY="10.0" onAction="#onClickMultiCsvFile" prefHeight="35.0" prefWidth="109.0" text="Multiple Csv File" />
+                           </children>
+                           <VBox.margin>
+                              <Insets />
+                           </VBox.margin>
+                        </HBox>
+                     </children>
+                  </VBox>
+                    </children>
+               <padding>
+                  <Insets left="12.0" />
+               </padding>
+                </VBox>
+         </children>
+      </VBox>
+      <VBox layoutY="499.0" prefHeight="71.0" prefWidth="870.0">
+         <children>
+                    <JFXButton fx:id="scheduleBtn" alignment="CENTER" focusTraversable="false" onAction="#getScheduleAction" prefHeight="41.0" prefWidth="128.0" style="-fx-background-color: #1565c0;" text="Submit" textAlignment="CENTER" textFill="#fcf6f6" textOverrun="CENTER_ELLIPSIS">
+               <font>
+                  <Font size="18.0" />
+               </font>
+               <VBox.margin>
+                  <Insets bottom="15.0" left="370.0" right="370.0" top="15.0" />
+               </VBox.margin>
+               <padding>
+                  <Insets left="20.0" right="20.0" />
+               </padding>
+                    </JFXButton>
+         </children>
+      </VBox>
+      <HBox alignment="BOTTOM_RIGHT" layoutY="604.0" prefHeight="24.0" prefWidth="870.0" style="-fx-background-color: #E8E5E5;">
+         <children>
+            <Label alignment="TOP_LEFT" contentDisplay="RIGHT" prefHeight="27.0" prefWidth="323.0" text="Copyright © 2020.Platform 3 Solutions.All rights reserved." textFill="#ab9a9a">
+               <HBox.margin>
+                  <Insets right="15.0" />
+               </HBox.margin>
+               <padding>
+                  <Insets bottom="5.0" left="5.0" top="5.0" />
+               </padding>
+            </Label>
+         </children>
+      </HBox>
+        <MaskerPane fx:id="maskpane" prefHeight="630.0" prefWidth="870.0" visible="false" />
+    </children>
+</AnchorPane>
