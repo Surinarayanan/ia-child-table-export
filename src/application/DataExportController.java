@@ -71,8 +71,6 @@ public class DataExportController implements Initializable {
     private List<String> tableList = new ArrayList<>();
     private String lastColumnName = "";
     private boolean scheduleAction = true;
-    private boolean columnAction = true;
-
 
     private static Logger LOGGER = Logger.getLogger(DataExportController.class);
 
@@ -82,8 +80,6 @@ public class DataExportController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-
-
         multipleCsvFIle.setSelectedColor(Color.valueOf("#1565c0"));
         excelFile.setSelectedColor(Color.valueOf("#1565c0"));
         excelFile.setSelected(true);
@@ -102,8 +98,11 @@ public class DataExportController implements Initializable {
         File file = fileChooser.showOpenDialog(dataPathBrowseBtn.getScene().getWindow());
         if (file != null) {
             dataPathTextField.setText(file.getAbsolutePath());
-            outputPathTextField.setText(dataPathTextField.getText().substring(0, dataPathTextField.getText().lastIndexOf(File.separator)));
             updateParentTableColumns(file);
+            if (outputPathTextField.getText().isEmpty()) {
+                outputPathTextField.setText(dataPathTextField.getText().substring(0, dataPathTextField.getText().lastIndexOf(File.separator)));
+            }
+            checkOutputFolderExists();
         } else {
             dataPathTextField.setText("");
         }
@@ -124,13 +123,27 @@ public class DataExportController implements Initializable {
                 outputPathTextField.setText("");
             }
         }
+        checkOutputFolderExists();
         bindSetup();
+    }
+
+    private void checkOutputFolderExists() {
+        String outputLocation = outputPathTextField.getText();
+        if (!outputLocation.isEmpty() && !dataPathTextField.getText().isEmpty()) {
+            String existedOutputFolder=outputLocation + File.separator + new File(dataPathTextField.getText()).getName().split("\\.")[0] + "-Child Tables";
+            File file = new File(existedOutputFolder);
+            if (file.isDirectory()) {
+                Alerts.WarningAlert("Warning !!", "Output Folder Exists", "Please choose some other folder or delete existing folder");
+                outputPathTextField.setText("");
+            }
+        }
     }
 
     @FXML
     void onClickMultiCsvFile(ActionEvent event) {
         multipleCsvFIle.setSelected(true);
         excelFile.setSelected(false);
+        checkOutputFolderExists();
         bindSetup();
     }
 
@@ -138,12 +151,14 @@ public class DataExportController implements Initializable {
     void onClickExcel(ActionEvent event) {
         excelFile.setSelected(true);
         multipleCsvFIle.setSelected(false);
+        checkOutputFolderExists();
         bindSetup();
     }
 
     @FXML
     void getScheduleAction(ActionEvent event) {
 
+        checkOutputFolderExists();
         if (tableList.isEmpty()) {
             Alerts.WarningAlert("Warning !!", "No child table to process", "Please choose csv file with child table");
         } else if (!mainTableTo.getText().equalsIgnoreCase(lastColumnName) && scheduleAction) {
@@ -189,11 +204,9 @@ public class DataExportController implements Initializable {
         Scene scene = new Scene(root, 500, 270);
         progressPage.setScene(scene);
         progressPage.show();
-        LOGGER.debug("Progress Page Called");
         progressPage.setOnCloseRequest(getProgressControllerCloseEvent());
         progressPage.setOnHidden(event -> maskpane.setVisible(false));
     }
-
     private EventHandler<WindowEvent> getProgressControllerCloseEvent() {
         return event -> {
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
@@ -209,10 +222,11 @@ public class DataExportController implements Initializable {
                     if (DataExportBean.currentThread.isAlive()) {
                         DataExportBean.currentThread.stop();
                     }
-                    File file = new File(DataExportBean.jobOutputPath);
+                    /*File file = new File(DataExportBean.jobOutputPath);
                     if (file != null && file.isDirectory()) {
                         deleteDirectory(file);
-                    }
+                    }*/
+                    bindSetup();
                     maskpane.setVisible(false);
                 }
                 alert.close();
@@ -257,7 +271,7 @@ public class DataExportController implements Initializable {
 
     private EventHandler<ActionEvent> refractorAction() {
         return event -> {
-
+            checkOutputFolderExists();
         };
     }
 
@@ -290,8 +304,6 @@ public class DataExportController implements Initializable {
         if (headerList.size() == 0) {
             WarningAlert("Warning !!", "Parent Table Columns was empty", "Please choose valid csv file");
         } else {
-            LOGGER.debug("Header list prepared");
-            LOGGER.debug("Child Table list prepared");
             lastColumnName = headerList.get(headerList.size() - 1);
             mainTableTo.setText(headerList.get(headerList.size() - 1));
         }

@@ -12,4 +12,5 @@ public class DataExportBean {
     public static Thread currentThread = null;
     public static boolean isMultipleCsvFile = false;
     public static long headerLastPosition = 0;
+
 }
