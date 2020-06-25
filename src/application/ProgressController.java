@@ -98,11 +98,11 @@ public class ProgressController implements Initializable {
         String refactorDataPath = dataLocation;
         double noOfLines = 0;
         if (isRefactorFile) {
-            LOGGER.debug("Refactor process started");
+            //    LOGGER.debug("Refactor process started");
             RefactorProcess refactorProcess = new RefactorProcess(refactorDataPath, outputLocation);
             refactorDataPath = refactorProcess.startRefactoring();
             noOfLines = refactorProcess.getTotalNumberOfLines();
-            LOGGER.debug("Refactor process completed");
+            //    LOGGER.debug("Refactor process completed");
         } else {
             noOfLines = getNoOfLines(refactorDataPath);
         }
@@ -134,7 +134,8 @@ public class ProgressController implements Initializable {
                                         List<String> headerLineWriterList = new ArrayList();
                                         headerLineWriterList.addAll(tableWithHeaderList.get(ROOT_TABLE));
                                         headerLineWriterList.add("");
-                                        headerLineWriterList.addAll(Arrays.asList(tableHeader.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)")).stream().map(header -> header.replace("\"", "")).collect(Collectors.toList()));
+                                        headerLineWriterList.addAll(Arrays.asList(tableHeader.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)")).stream().map(header -> header.replace("\"", ""))
+                                                .collect(Collectors.toList()));
                                         tableICSVWriterMap.get(childTable.getValue()).writeNext(headerLineWriterList.toArray(new String[headerLineWriterList.size()]));
                                         isHeaderAddedInFile.put(childTable.getValue(), true);
                                     }
@@ -169,18 +170,23 @@ public class ProgressController implements Initializable {
                 System.exit(0);
             }
             closeAllPrintWriterForAllTable();
+
             if (isRefactorFile) {
                 String refactorFileName = "";
                 File refactorFile = new File(refactorDataPath);
                 refactorFileName = refactorFile.getName();
                 String finalRefactorFileName = refactorFileName;
                 FilenameFilter filter = (dir, name) -> name.equalsIgnoreCase(finalRefactorFileName);
-                refactorFile.delete();
-                while (true) {
-                    File outputFolder = new File(outputLocation);
-                    String[] actualFiles = outputFolder.list(filter);
-                    if (actualFiles.length == 0) {
-                        break;
+                System.gc();
+                boolean isDeleted = refactorFile.delete();
+                if (!isDeleted) {
+                    try {
+                        Thread.sleep(5000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    if (new File(refactorDataPath).exists()) {
+                        new File(refactorDataPath).delete();
                     }
                 }
             }
@@ -213,7 +219,6 @@ public class ProgressController implements Initializable {
 
     @FXML
     private void refreshStatus(ActionEvent event) {
-
         if (progress_status >= 1.0) {
             Platform.runLater(() -> {
                 try {
@@ -253,13 +258,18 @@ public class ProgressController implements Initializable {
             String progressValue = "";
             if (progress_status >= 1.0) {
                 FilenameFilter filter = (dir, name) -> name.endsWith(".csv");
-                while (true && !isMultipleCsvFile) {
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+               /* while (true && !isMultipleCsvFile) {
                     File outputFolder = new File(outputLocation);
                     String[] actualFiles = outputFolder.list(filter);
                     if (actualFiles.length == 0) {
                         break;
                     }
-                }
+                }*/
                 progressBar.setProgress(progress_status);
                 progressValue = String.valueOf(progress_status * 100).split("\\.")[0] + " %";
                 progressStatusLabel.setText(progressValue);
@@ -291,12 +301,13 @@ public class ProgressController implements Initializable {
             try {
                 tableWriter.flush();
                 tableWriter.close();
+                tableWriter = null;
             } catch (IOException e) {
                 LOGGER.error("Close File Writer for this table : " + tableWriter, e.fillInStackTrace());
                 ErrorAlert("ERROR !!", "Close File Writer for this table : " + tableWriter, e.getMessage());
             }
         }
-        LOGGER.debug("Closed all the table csv file");
+        //    LOGGER.debug("Closed all the table csv file");
     }
 
     private void initializePrintWriterForAllTables(Map<Integer, String> tableList) {
@@ -311,7 +322,7 @@ public class ProgressController implements Initializable {
             isHeaderAddedInFile.put(table, false);
         }
         childTableCount = tableICSVWriterMap.size() - 1;
-        LOGGER.debug("Initialized all the table csv file");
+        //   LOGGER.debug("Initialized all the table csv file");
     }
 
     private Map<Integer, String> determineAllTables(List<String> headerList) {
@@ -326,7 +337,7 @@ public class ProgressController implements Initializable {
                 tablePosition.put(position, getTableName(header).trim());
             }
         }
-        LOGGER.debug("Determine all the child table with position");
+        //   LOGGER.debug("Determine all the child table with position");
         return tablePosition;
     }
 
@@ -339,7 +350,7 @@ public class ProgressController implements Initializable {
     }
 
     public void convertCsvToExcel() {
-        LOGGER.debug("Start Merging Csv file to Excel");
+        //   LOGGER.debug("Start Merging Csv file to Excel");
         double fileProgressStatus = 0.5 / childTableCount;
         File folder = new File(outputLocation);
         XSSFWorkbook workbook = new XSSFWorkbook();
@@ -347,7 +358,7 @@ public class ProgressController implements Initializable {
         try {
             for (File file : folder.listFiles()) {
                 if (file.isFile()) {
-                    LOGGER.debug("Current Csv File :" + file.getName());
+                    //    LOGGER.debug("Current Csv File :" + file.getName());
                     processingFile = file;
                     ArrayList<String> al = null;
                     ArrayList<ArrayList<String>> arlist = new ArrayList<>();
@@ -397,7 +408,7 @@ public class ProgressController implements Initializable {
         workbook.write(fileOut);
         fileOut.flush();
         fileOut.close();
-        LOGGER.debug("Merged into Excel File :" + file.getName());
+
         if (file.delete()) {
             progress_status += fileProgressStatus;
             progressStatusInfo(progress_status);

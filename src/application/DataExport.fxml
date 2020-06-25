@@ -131,7 +131,7 @@
                   </VBox>
                         <HBox prefHeight="67.0" prefWidth="858.0" spacing="10.0">
                             <children>
-                                <Label prefHeight="48.0" prefWidth="198.0" text="Parent Table Last Column Name ">
+                                <Label prefHeight="48.0" prefWidth="213.0" text="Parent Table Last Column Name ">
                            <padding>
                               <Insets bottom="15.0" left="3.0" top="15.0" />
                            </padding>
@@ -157,7 +157,7 @@
                         </HBox>
                   <VBox prefHeight="12.0" prefWidth="170.0">
                      <children>
-                        <Label prefHeight="20.0" prefWidth="146.0" text="Choose Output Type :">
+                        <Label prefHeight="45.0" prefWidth="173.0" text="Choose Output Type :">
                            <padding>
                               <Insets bottom="15.0" right="15.0" top="12.0" />
                            </padding>

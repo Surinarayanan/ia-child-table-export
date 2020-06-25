@@ -36,16 +36,17 @@ public class RefactorProcess {
 
     public String startRefactoring() {
 
-        String refactorFileName = outputLocation + File.separator + UUID.randomUUID().toString() + CSV;
+        String refactorFileName = outputLocation + File.separator + UUID.randomUUID().toString().substring(0, 8) + CSV;
         CSVParser parser = new CSVParserBuilder().withSeparator(',')
                 .withFieldAsNull(CSVReaderNullFieldIndicator.BOTH).withIgnoreLeadingWhiteSpace(true)
                 .withIgnoreQuotations(false).withQuoteChar('"').withStrictQuotes(false).build();
         CSVReader csvReader = null;
         ICSVWriter csvWriter = null;
+        FileWriter fileWriter = null;
         try {
-            csvWriter = new CSVWriterBuilder(new FileWriter(refactorFileName)).withParser(parser).build();
-            csvReader = new CSVReaderBuilder(new FileReader(dataFilePath))
-                    .withCSVParser(parser).build();
+            fileWriter = new FileWriter(refactorFileName);
+            csvWriter = new CSVWriterBuilder(fileWriter).withParser(parser).build();
+            csvReader = new CSVReaderBuilder(new FileReader(dataFilePath)).withCSVParser(parser).build();
             String[] line = null;
             List<String[]> modifyLinesList = new ArrayList<>();
             while ((line = csvReader.readNext()) != null) {
@@ -63,6 +64,9 @@ public class RefactorProcess {
             totalNumberOfLines = modifyLinesList.size();
             csvWriter.writeAll(modifyLinesList);
             csvWriter.close();
+            fileWriter.close();
+            csvReader.close();
+            csvWriter = null;
             LOGGER.debug("Refactor File Created");
         } catch (IOException | CsvValidationException e) {
             LOGGER.error("Error occurred while refactor", e.fillInStackTrace());
