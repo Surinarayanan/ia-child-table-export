@@ -190,9 +190,14 @@
                 </VBox>
          </children>
       </VBox>
-      <VBox layoutY="499.0" prefHeight="71.0" prefWidth="870.0">
+      <HBox alignment="CENTER" layoutY="499.0" prefHeight="71.0" prefWidth="870.0" spacing="20.0">
          <children>
-                    <JFXButton fx:id="scheduleBtn" alignment="CENTER" focusTraversable="false" onAction="#getScheduleAction" prefHeight="41.0" prefWidth="128.0" style="-fx-background-color: #1565c0;" text="Submit" textAlignment="CENTER" textFill="#fcf6f6" textOverrun="CENTER_ELLIPSIS">
+            <JFXButton fx:id="clearButton" onAction="#getClearAction" prefHeight="41.0" prefWidth="128.0" style="-fx-background-color: #64b5f6;" text="Clear">
+               <font>
+                  <Font size="18.0" />
+               </font>
+            </JFXButton>
+                    <JFXButton fx:id="scheduleBtn" alignment="CENTER" focusTraversable="false" onAction="#getScheduleAction" opacity="0.19" prefHeight="41.0" prefWidth="128.0" style="-fx-background-color: #1565c0;" text="Submit" textAlignment="CENTER" textFill="#fcf6f6" textOverrun="CENTER_ELLIPSIS">
                <font>
                   <Font size="18.0" />
                </font>
@@ -204,7 +209,10 @@
                </padding>
                     </JFXButton>
          </children>
-      </VBox>
+         <padding>
+            <Insets bottom="15.0" left="280.0" right="280.0" top="15.0" />
+         </padding>
+      </HBox>
       <HBox alignment="BOTTOM_RIGHT" layoutY="604.0" prefHeight="24.0" prefWidth="870.0" style="-fx-background-color: #E8E5E5;">
          <children>
             <Label alignment="TOP_LEFT" contentDisplay="RIGHT" prefHeight="27.0" prefWidth="323.0" text="Copyright © 2020.Platform 3 Solutions.All rights reserved." textFill="#ab9a9a">

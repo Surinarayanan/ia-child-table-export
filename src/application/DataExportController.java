@@ -59,6 +59,8 @@ public class DataExportController implements Initializable {
     @FXML
     private JFXButton scheduleBtn;
     @FXML
+    private JFXButton clearButton;
+    @FXML
     private JFXTextField mainTableTo;
     @FXML
     private JFXRadioButton excelFile;
@@ -82,11 +84,15 @@ public class DataExportController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         multipleCsvFIle.setSelectedColor(Color.valueOf("#1565c0"));
         excelFile.setSelectedColor(Color.valueOf("#1565c0"));
-        excelFile.setSelected(true);
+        setVDefaultValuesIntoBean();
         refactorFile.setOnAction(refractorAction());
         Platform.runLater(() -> {
             bindSetup();
         });
+    }
+
+    private void setVDefaultValuesIntoBean() {
+        excelFile.setSelected(true);
     }
 
     @FXML
@@ -97,16 +103,21 @@ public class DataExportController implements Initializable {
         );
         File file = fileChooser.showOpenDialog(dataPathBrowseBtn.getScene().getWindow());
         if (file != null) {
+            clearLocalValues();
             dataPathTextField.setText(file.getAbsolutePath());
             updateParentTableColumns(file);
-            if (outputPathTextField.getText().isEmpty()) {
-                outputPathTextField.setText(dataPathTextField.getText().substring(0, dataPathTextField.getText().lastIndexOf(File.separator)));
-            }
+            outputPathTextField.setText(dataPathTextField.getText().substring(0, dataPathTextField.getText().lastIndexOf(File.separator)));
             checkOutputFolderExists();
         } else {
             dataPathTextField.setText("");
         }
         bindSetup();
+    }
+
+    private void clearLocalValues() {
+        headerList.clear();
+        tableList.clear();
+        lastColumnName = "";
     }
 
     @FXML
@@ -120,6 +131,7 @@ public class DataExportController implements Initializable {
             if (!dataPathTextField.getText().isEmpty()) {
                 outputPathTextField.setText(dataPathTextField.getText().substring(0, dataPathTextField.getText().lastIndexOf(File.separator)));
             } else {
+                clearLocalValues();
                 outputPathTextField.setText("");
             }
         }
@@ -130,7 +142,7 @@ public class DataExportController implements Initializable {
     private void checkOutputFolderExists() {
         String outputLocation = outputPathTextField.getText();
         if (!outputLocation.isEmpty() && !dataPathTextField.getText().isEmpty()) {
-            String existedOutputFolder=outputLocation + File.separator + new File(dataPathTextField.getText()).getName().split("\\.")[0] + "-Child Tables";
+            String existedOutputFolder = outputLocation + File.separator + new File(dataPathTextField.getText()).getName().split("\\.")[0] + "-Child Tables";
             File file = new File(existedOutputFolder);
             if (file.isDirectory()) {
                 Alerts.WarningAlert("Warning !!", "Output Folder Exists", "Please choose some other folder or delete existing folder");
@@ -156,11 +168,25 @@ public class DataExportController implements Initializable {
     }
 
     @FXML
+    void getClearAction(ActionEvent event) {
+        dataPathTextField.clear();
+        outputPathTextField.clear();
+        refactorFile.setSelected(false);
+        multipleCsvFIle.setSelected(false);
+        headerList.clear();
+        tableList.clear();
+        lastColumnName = "";
+        mainTableTo.clear();
+        bindSetup();
+    }
+
+    @FXML
     void getScheduleAction(ActionEvent event) {
 
         checkOutputFolderExists();
         if (tableList.isEmpty()) {
             Alerts.WarningAlert("Warning !!", "No child table to process", "Please choose csv file with child table");
+            dataPathTextField.clear();
         } else if (!mainTableTo.getText().equalsIgnoreCase(lastColumnName) && scheduleAction) {
             maskpane.setVisible(true);
             mainTableLastColumnNameAlert(event);
@@ -207,6 +233,7 @@ public class DataExportController implements Initializable {
         progressPage.setOnCloseRequest(getProgressControllerCloseEvent());
         progressPage.setOnHidden(event -> maskpane.setVisible(false));
     }
+
     private EventHandler<WindowEvent> getProgressControllerCloseEvent() {
         return event -> {
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
@@ -222,10 +249,7 @@ public class DataExportController implements Initializable {
                     if (DataExportBean.currentThread.isAlive()) {
                         DataExportBean.currentThread.stop();
                     }
-                    /*File file = new File(DataExportBean.jobOutputPath);
-                    if (file != null && file.isDirectory()) {
-                        deleteDirectory(file);
-                    }*/
+                    clearBeans();
                     bindSetup();
                     maskpane.setVisible(false);
                 }
@@ -234,15 +258,10 @@ public class DataExportController implements Initializable {
         };
     }
 
-    boolean deleteDirectory(File directoryToBeDeleted) {
-        File[] allContents = directoryToBeDeleted.listFiles();
-        if (allContents != null) {
-            for (File file : allContents) {
-                deleteDirectory(file);
-            }
-        }
-        return directoryToBeDeleted.delete();
+    private void clearBeans() {
+        DataExportBean.clear();
     }
+
 
     private void setValuesIntoBean() {
         DataExportBean.dataFilePath = dataPathTextField.getText();
@@ -337,6 +356,12 @@ public class DataExportController implements Initializable {
             }
             return false;
         }, outputPathTextField.textProperty());
+        if (dataPathValid.get() && outputPathValid.get() && outputType.get() && lastColumnName.get()) {
+            scheduleBtn.setOpacity(1.0);
+        } else {
+            scheduleBtn.setOpacity(0.19);
+        }
+        clearButton.setDisable(!dataPathValid.get() && !outputPathValid.get() && !outputType.get() && !lastColumnName.get());
         scheduleBtn.disableProperty().bind(dataPathValid.not().or(outputPathValid.not().or(outputType.not()).or(lastColumnName.not())));
     }
 }

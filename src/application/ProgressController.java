@@ -98,11 +98,10 @@ public class ProgressController implements Initializable {
         String refactorDataPath = dataLocation;
         double noOfLines = 0;
         if (isRefactorFile) {
-            //    LOGGER.debug("Refactor process started");
+
             RefactorProcess refactorProcess = new RefactorProcess(refactorDataPath, outputLocation);
             refactorDataPath = refactorProcess.startRefactoring();
             noOfLines = refactorProcess.getTotalNumberOfLines();
-            //    LOGGER.debug("Refactor process completed");
         } else {
             noOfLines = getNoOfLines(refactorDataPath);
         }
@@ -222,6 +221,7 @@ public class ProgressController implements Initializable {
         if (progress_status >= 1.0) {
             Platform.runLater(() -> {
                 try {
+                    clearBeans();
                     Desktop.getDesktop().open(new File(outputLocation));
                 } catch (IOException e) {
                     LOGGER.error("Failed to open the output file", e.fillInStackTrace());
@@ -241,6 +241,10 @@ public class ProgressController implements Initializable {
             Stage progressStage = (Stage) progressLabel.getScene().getWindow();
             progressStage.close();
         }
+    }
+
+    private void clearBeans() {
+        DataExportBean.clear();
     }
 
     boolean deleteDirectory(File directoryToBeDeleted) {
@@ -263,13 +267,6 @@ public class ProgressController implements Initializable {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-               /* while (true && !isMultipleCsvFile) {
-                    File outputFolder = new File(outputLocation);
-                    String[] actualFiles = outputFolder.list(filter);
-                    if (actualFiles.length == 0) {
-                        break;
-                    }
-                }*/
                 progressBar.setProgress(progress_status);
                 progressValue = String.valueOf(progress_status * 100).split("\\.")[0] + " %";
                 progressStatusLabel.setText(progressValue);
@@ -337,7 +334,6 @@ public class ProgressController implements Initializable {
                 tablePosition.put(position, getTableName(header).trim());
             }
         }
-        //   LOGGER.debug("Determine all the child table with position");
         return tablePosition;
     }
 
