@@ -48,7 +48,6 @@ public class RefactorProcess {
             csvWriter = new CSVWriterBuilder(fileWriter).withParser(parser).build();
             csvReader = new CSVReaderBuilder(new FileReader(dataFilePath)).withCSVParser(parser).build();
             String[] line = null;
-            List<String[]> modifyLinesList = new ArrayList<>();
             while ((line = csvReader.readNext()) != null) {
                 List<String> lineValuesList = Arrays.asList(line);
                 List<String> modifiedList = new ArrayList<>();
@@ -59,24 +58,18 @@ public class RefactorProcess {
                         modifiedList.add(lineList.replace("\\" + "\"", "\""));
                     }
                 }
-                modifyLinesList.add(modifiedList.toArray(new String[modifiedList.size()]));
-                if (modifyLinesList.size() == 100) {
-                    totalNumberOfLines += modifyLinesList.size();
-                    csvWriter.writeAll(modifyLinesList);
-                    modifyLinesList.clear();
-                }
+                csvWriter.writeNext(modifiedList.toArray(new String[modifiedList.size()]));
+                totalNumberOfLines++;
             }
-            totalNumberOfLines += modifyLinesList.size();
-            csvWriter.writeAll(modifyLinesList);
             csvWriter.close();
             fileWriter.close();
             csvReader.close();
             csvWriter = null;
-            LOGGER.debug("Refactor File Created");
         } catch (IOException | CsvValidationException e) {
             LOGGER.error("Error occurred while refactor", e.fillInStackTrace());
             ErrorAlert("Error occurred when refactor", e.getMessage(), e.getMessage());
         }
+        LOGGER.debug("Refactor File Created");
         return refactorFileName;
     }
 
