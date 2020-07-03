@@ -304,7 +304,6 @@ public class ProgressController implements Initializable {
                 ErrorAlert("ERROR !!", "Close File Writer for this table : " + tableWriter, e.getMessage());
             }
         }
-        //    LOGGER.debug("Closed all the table csv file");
     }
 
     private void initializePrintWriterForAllTables(Map<Integer, String> tableList) {
@@ -319,7 +318,6 @@ public class ProgressController implements Initializable {
             isHeaderAddedInFile.put(table, false);
         }
         childTableCount = tableICSVWriterMap.size() - 1;
-        //   LOGGER.debug("Initialized all the table csv file");
     }
 
     private Map<Integer, String> determineAllTables(List<String> headerList) {

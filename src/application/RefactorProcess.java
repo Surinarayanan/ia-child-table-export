@@ -24,7 +24,7 @@ public class RefactorProcess {
 
     private String dataFilePath;
     private String outputLocation;
-    private double totalNumberOfLines;
+    private double totalNumberOfLines = 0;
 
     private static final String CSV = ".csv";
     private static Logger LOGGER = Logger.getLogger(RefactorProcess.class);
@@ -60,8 +60,13 @@ public class RefactorProcess {
                     }
                 }
                 modifyLinesList.add(modifiedList.toArray(new String[modifiedList.size()]));
+                if (modifyLinesList.size() == 100) {
+                    totalNumberOfLines += modifyLinesList.size();
+                    csvWriter.writeAll(modifyLinesList);
+                    modifyLinesList.clear();
+                }
             }
-            totalNumberOfLines = modifyLinesList.size();
+            totalNumberOfLines += modifyLinesList.size();
             csvWriter.writeAll(modifyLinesList);
             csvWriter.close();
             fileWriter.close();
