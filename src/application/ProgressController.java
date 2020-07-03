@@ -61,6 +61,7 @@ public class ProgressController implements Initializable {
     private static double progress_status = 0.0;
     private static double childTableCount = 0;
     private static String EXCEL = ".xlsx";
+    private static String splitRegex = ",(?=([^\"]*\"[^\"]*\")*[^\"]*$)";
     private long headerLastPosition;
 
     private CSVParser parser = new CSVParserBuilder().withSeparator(',')
@@ -133,7 +134,8 @@ public class ProgressController implements Initializable {
                                         List<String> headerLineWriterList = new ArrayList();
                                         headerLineWriterList.addAll(tableWithHeaderList.get(ROOT_TABLE));
                                         headerLineWriterList.add("");
-                                        headerLineWriterList.addAll(Arrays.asList(tableHeader.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)")).stream().map(header -> header.replace("\"", ""))
+
+                                        headerLineWriterList.addAll(Arrays.asList(tableHeader.split(splitRegex)).stream().map(header -> header.replace("\"", ""))
                                                 .collect(Collectors.toList()));
                                         tableICSVWriterMap.get(childTable.getValue()).writeNext(headerLineWriterList.toArray(new String[headerLineWriterList.size()]));
                                         isHeaderAddedInFile.put(childTable.getValue(), true);
@@ -150,7 +152,7 @@ public class ProgressController implements Initializable {
                                         List<String> valueLineWriterList = new ArrayList();
                                         valueLineWriterList.addAll(rootTableValuesList);
                                         valueLineWriterList.add("");
-                                        for (String rowValue : tableRowContent[i].split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)")) {
+                                        for (String rowValue : tableRowContent[i].split(splitRegex)) {
                                             valueLineWriterList.add(rowValue.replace("\"", ""));
                                         }
                                         tableICSVWriterMap.get(childTable.getValue())
@@ -304,7 +306,6 @@ public class ProgressController implements Initializable {
                 ErrorAlert("ERROR !!", "Close File Writer for this table : " + tableWriter, e.getMessage());
             }
         }
-        //    LOGGER.debug("Closed all the table csv file");
     }
 
     private void initializePrintWriterForAllTables(Map<Integer, String> tableList) {
@@ -319,7 +320,6 @@ public class ProgressController implements Initializable {
             isHeaderAddedInFile.put(table, false);
         }
         childTableCount = tableICSVWriterMap.size() - 1;
-        //   LOGGER.debug("Initialized all the table csv file");
     }
 
     private Map<Integer, String> determineAllTables(List<String> headerList) {
@@ -382,19 +382,19 @@ public class ProgressController implements Initializable {
                 }
             }
         } catch (FileNotFoundException e) {
-            LOGGER.error("Error Occured While data write into an excel file ," + "Processing File Name :" + processingFile.getName() +
+            LOGGER.error("Error occurred While data write into an excel file ," + "Processing File Name :" + processingFile.getName() +
                     "\n" + e.getMessage());
-            ErrorAlert("ERROR !!", "Error Occured While data write into an excel file", "Processing File Name :" + processingFile.getName() +
+            ErrorAlert("ERROR !!", "Error occurred While data write into an excel file", "Processing File Name :" + processingFile.getName() +
                     "\n" + e.getMessage());
         } catch (IOException e) {
-            LOGGER.error("Error Occured While data write into an excel file ," + "Processing File Name :" + processingFile.getName() +
+            LOGGER.error("Error occurred While data write into an excel file ," + "Processing File Name :" + processingFile.getName() +
                     "\n" + e.getMessage());
-            ErrorAlert("ERROR !!", "Error Occured While data write into an excel file", "Processing File Name :" + processingFile.getName() +
+            ErrorAlert("ERROR !!", "Error occurred While data write into an excel file", "Processing File Name :" + processingFile.getName() +
                     "\n" + e.getMessage());
         } catch (CsvValidationException e) {
-            LOGGER.error("Error Occured While data write into an excel file ," + "Processing File Name :" + processingFile.getName() +
+            LOGGER.error("Error occurred While data write into an excel file ," + "Processing File Name :" + processingFile.getName() +
                     "\n" + e.getMessage());
-            ErrorAlert("ERROR !!", "Error Occured While data write into an excel file", "Processing File Name :" + processingFile.getName() +
+            ErrorAlert("ERROR !!", "Error occurred While data write into an excel file", "Processing File Name :" + processingFile.getName() +
                     "\n" + e.getMessage());
         }
     }
