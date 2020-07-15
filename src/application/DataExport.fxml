@@ -213,8 +213,16 @@
             <Insets bottom="15.0" left="280.0" right="280.0" top="15.0" />
          </padding>
       </HBox>
-      <HBox alignment="BOTTOM_RIGHT" layoutY="604.0" prefHeight="24.0" prefWidth="870.0" style="-fx-background-color: #E8E5E5;">
+      <HBox alignment="BOTTOM_RIGHT" layoutY="604.0" prefHeight="24.0" prefWidth="870.0" spacing="25.0" style="-fx-background-color: #E8E5E5;">
          <children>
+            <Label text="Version 1.1" textFill="#ab9a9a">
+               <HBox.margin>
+                  <Insets />
+               </HBox.margin>
+               <padding>
+                  <Insets bottom="5.0" />
+               </padding>
+            </Label>
             <Label alignment="TOP_LEFT" contentDisplay="RIGHT" prefHeight="27.0" prefWidth="323.0" text="Copyright © 2020.Platform 3 Solutions.All rights reserved." textFill="#ab9a9a">
                <HBox.margin>
                   <Insets right="15.0" />
@@ -224,6 +232,9 @@
                </padding>
             </Label>
          </children>
+         <padding>
+            <Insets right="14.0" />
+         </padding>
       </HBox>
         <MaskerPane fx:id="maskpane" prefHeight="630.0" prefWidth="870.0" visible="false" />
     </children>

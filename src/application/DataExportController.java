@@ -110,6 +110,7 @@ public class DataExportController implements Initializable {
             checkOutputFolderExists();
         } else {
             dataPathTextField.setText("");
+            outputPathTextField.clear();
         }
         bindSetup();
     }
@@ -142,7 +143,7 @@ public class DataExportController implements Initializable {
     private void checkOutputFolderExists() {
         String outputLocation = outputPathTextField.getText();
         if (!outputLocation.isEmpty() && !dataPathTextField.getText().isEmpty()) {
-            String existedOutputFolder = outputLocation + File.separator + new File(dataPathTextField.getText()).getName().split("\\.")[0] + "-Child Tables";
+            String existedOutputFolder = outputLocation + File.separator + new File(dataPathTextField.getText()).getName().substring(0, new File(dataPathTextField.getText()).getName().lastIndexOf(".")) + "-Child Tables";
             File file = new File(existedOutputFolder);
             if (file.isDirectory()) {
                 Alerts.WarningAlert("Warning !!", "Output Folder Exists", "Please choose some other folder or delete existing folder");

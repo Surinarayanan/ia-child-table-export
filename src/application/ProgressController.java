@@ -40,7 +40,7 @@ public class ProgressController implements Initializable {
     @FXML
     private JFXProgressBar progressBar;
     @FXML
-    private JFXButton refreshButton;
+    private JFXButton cancelButton;
     @FXML
     public Label progressStatusLabel;
     @FXML
@@ -69,6 +69,7 @@ public class ProgressController implements Initializable {
             .withIgnoreQuotations(false).withQuoteChar('"').withStrictQuotes(false).build();
 
     private static Logger LOGGER = Logger.getLogger(DataExportController.class);
+    private static boolean wholeProcessCompleted;
 
     @PostConstruct
     public void init() {
@@ -76,6 +77,8 @@ public class ProgressController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+
+        wholeProcessCompleted = false;
         progressBar.setStyle("-fx-accent:  #1565c0;");
         progressStatusLabel.setText("0 %");
         dataLocation = DataExportBean.dataFilePath;
@@ -84,8 +87,8 @@ public class ProgressController implements Initializable {
         isMultipleCsvFile = DataExportBean.isMultipleCsvFile;
         headerLastPosition = DataExportBean.headerLastPosition;
         progress_status = 0.0;
-        refreshButton.setText("Cancel");
-        progressLabel.setText("Please wait , Job is in Progress");
+        cancelButton.setText("Cancel");
+        // progressLabel.setText("Please wait , Step 1 of Step 3");
         DataExportBean.currentThread = new Thread(this::startProcess);
         Platform.runLater(
                 () -> {
@@ -94,20 +97,38 @@ public class ProgressController implements Initializable {
         );
     }
 
+
     private void startProcess() {
 
+        Platform.runLater(() -> {
+            if (isMultipleCsvFile) {
+                progressLabel.setText("Please wait , Step 1 of Step 2");
+            } else {
+                progressLabel.setText("Please wait , Step 1 of Step 3");
+            }
+        });
         String refactorDataPath = dataLocation;
         double noOfLines = 0;
         if (isRefactorFile) {
 
-            RefactorProcess refactorProcess = new RefactorProcess(refactorDataPath, outputLocation);
+            RefactorProcess refactorProcess = new RefactorProcess(refactorDataPath, outputLocation, progress_status, progressStatusLabel, progressBar);
             refactorDataPath = refactorProcess.startRefactoring();
             noOfLines = refactorProcess.getTotalNumberOfLines();
         } else {
             noOfLines = getNoOfLines(refactorDataPath);
         }
+
+        progress_status = 0.0;
+        updateProgress();
+        Platform.runLater(() -> {
+            if (isMultipleCsvFile) {
+                progressLabel.setText("Please wait , Step 2 of Step 2");
+            } else {
+                progressLabel.setText("Please wait , Step 2 of Step 3");
+            }
+        });
         if (noOfLines != 0) {
-            double progress_status_increment_row = 0.5 / noOfLines;
+            double progress_status_increment_row = 1.0 / noOfLines;
             Map<Integer, String> tableListWithPosition = null;
             try {
                 CSVReader csvReader = new CSVReaderBuilder(new FileReader(refactorDataPath)).withCSVParser(parser).build();
@@ -164,7 +185,9 @@ public class ProgressController implements Initializable {
                     }
                     count++;
                     progress_status += progress_status_increment_row;
-                    progressStatusInfo(progress_status);
+                    progress_status = progress_status >= 1.0 ? 1.0 : progress_status;
+                    updateProgress();
+                    // progressStatusInfo(progress_status);
                 }
             } catch (IOException | CsvValidationException e) {
                 LOGGER.error("Write Data into Separate CSV file", e.fillInStackTrace());
@@ -193,8 +216,16 @@ public class ProgressController implements Initializable {
             }
             if (isMultipleCsvFile) {
                 progress_status += 0.5;
-                progressStatusInfo(progress_status);
+                // progressStatusInfo(progress_status);
+                progress_status = progress_status >= 1.0 ? 1.0 : progress_status;
+                wholeProcessCompleted = true;
+                updateProgress();
             } else {
+                Platform.runLater(() -> {
+                    progressLabel.setText("Please wait , Step 3 of Step 3");
+                });
+                progress_status = 0.0;
+                updateProgress();
                 convertCsvToExcel();
             }
         }
@@ -219,8 +250,8 @@ public class ProgressController implements Initializable {
     }
 
     @FXML
-    private void refreshStatus(ActionEvent event) {
-        if (progress_status >= 1.0) {
+    private void cancelAction(ActionEvent event) {
+        if (progress_status >= 1.0 && wholeProcessCompleted) {
             Platform.runLater(() -> {
                 try {
                     clearBeans();
@@ -262,7 +293,7 @@ public class ProgressController implements Initializable {
     private void updateProgress() {
         Platform.runLater(() -> {
             String progressValue = "";
-            if (progress_status >= 1.0) {
+            if (progress_status >= 1.0 && wholeProcessCompleted) {
                 FilenameFilter filter = (dir, name) -> name.endsWith(".csv");
                 try {
                     Thread.sleep(5000);
@@ -272,7 +303,7 @@ public class ProgressController implements Initializable {
                 progressBar.setProgress(progress_status);
                 progressValue = String.valueOf(progress_status * 100).split("\\.")[0] + " %";
                 progressStatusLabel.setText(progressValue);
-                refreshButton.setText("OK");
+                cancelButton.setText("OK");
                 progressLabel.setText("Job Completed");
             } else {
                 progressBar.setProgress(progress_status);
@@ -346,8 +377,7 @@ public class ProgressController implements Initializable {
     }
 
     public void convertCsvToExcel() {
-        //   LOGGER.debug("Start Merging Csv file to Excel");
-        double fileProgressStatus = 0.5 / childTableCount;
+        double fileProgressStatus = 1.0 / childTableCount;
         File folder = new File(outputLocation);
         XSSFWorkbook workbook = new XSSFWorkbook();
         File processingFile = null;
@@ -407,7 +437,12 @@ public class ProgressController implements Initializable {
 
         if (file.delete()) {
             progress_status += fileProgressStatus;
-            progressStatusInfo(progress_status);
+            progress_status = progress_status >= 1.0 ? 1.0 : progress_status;
+            if (progress_status >= 1.0) {
+                wholeProcessCompleted = true;
+            }
+            updateProgress();
+            // progressStatusInfo(progress_status);
         }
     }
 
@@ -416,10 +451,10 @@ public class ProgressController implements Initializable {
         cell.setCellValue(ardata);
     }
 
-    public void progressStatusInfo(double time) {
+   /* public void progressStatusInfo(double time) {
         progress_status = time >= 1.0 ? 1.0 : time;
         updateProgress();
-    }
+    }*/
 
     public static boolean isInteger(String s) {
         try {
