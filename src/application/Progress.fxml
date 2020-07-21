@@ -31,6 +31,8 @@
                   <Label fx:id="progressLabel" prefHeight="17.0" prefWidth="378.0" />
                   <Label fx:id="progressStatusLabel" prefHeight="29.0" prefWidth="55.0" />
                         <JFXProgressBar fx:id="progressBar" blendMode="ADD" prefHeight="35.0" prefWidth="484.0" progress="0.0" style="-fx-background-color: #2b54d0;" />
+                  <Label layoutX="22.0" layoutY="25.0" prefHeight="17.0" prefWidth="378.0" />
+                  <Label fx:id="statusLabel" layoutX="22.0" layoutY="121.0" prefHeight="17.0" prefWidth="378.0" />
                </children>
                <padding>
                   <Insets bottom="15.0" left="12.0" right="12.0" top="15.0" />
@@ -39,7 +41,7 @@
             </children>
         </VBox>
       <Separator layoutY="200.0" prefHeight="43.0" prefWidth="500.0" />
-            <JFXButton fx:id="refreshButton" ellipsisString="" layoutX="371.0" layoutY="231.0" onAction="#refreshStatus" prefHeight="29.0" prefWidth="104.0" style="-fx-background-color: #1565c0#1565c0;" textFill="WHITE" AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="231.0">
+            <JFXButton fx:id="cancelButton" ellipsisString="" layoutX="371.0" layoutY="231.0" onAction="#cancelAction" prefHeight="29.0" prefWidth="104.0" style="-fx-background-color: #1565c0#1565c0;" textFill="WHITE" AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="231.0">
          <padding>
             <Insets left="20.0" right="20.0" />
          </padding></JFXButton>

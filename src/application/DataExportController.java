@@ -110,6 +110,7 @@ public class DataExportController implements Initializable {
             checkOutputFolderExists();
         } else {
             dataPathTextField.setText("");
+            outputPathTextField.clear();
         }
         bindSetup();
     }
@@ -142,7 +143,7 @@ public class DataExportController implements Initializable {
     private void checkOutputFolderExists() {
         String outputLocation = outputPathTextField.getText();
         if (!outputLocation.isEmpty() && !dataPathTextField.getText().isEmpty()) {
-            String existedOutputFolder = outputLocation + File.separator + new File(dataPathTextField.getText()).getName().split("\\.")[0] + "-Child Tables";
+            String existedOutputFolder = outputLocation + File.separator + new File(dataPathTextField.getText()).getName().substring(0, new File(dataPathTextField.getText()).getName().lastIndexOf(".")) + "-Child Tables";
             File file = new File(existedOutputFolder);
             if (file.isDirectory()) {
                 Alerts.WarningAlert("Warning !!", "Output Folder Exists", "Please choose some other folder or delete existing folder");
@@ -278,7 +279,8 @@ public class DataExportController implements Initializable {
                 ErrorAlert("Error !!", "Can't able to create Output Folder", "Please check the permission");
             }
         }
-        DataExportBean.jobOutputPath = outputPathTextField.getText() + File.separator + new File(DataExportBean.dataFilePath).getName().split("\\.")[0] + "-Child Tables";
+        String folderName = new File(DataExportBean.dataFilePath).getName();
+        DataExportBean.jobOutputPath = outputPathTextField.getText() + File.separator + folderName.substring(0, folderName.lastIndexOf(".")) + "-Child Tables";
         if (!new File(DataExportBean.jobOutputPath).isDirectory()) {
             new File(DataExportBean.jobOutputPath).mkdir();
             if (!new File(DataExportBean.jobOutputPath).isDirectory()) {
