@@ -279,7 +279,8 @@ public class DataExportController implements Initializable {
                 ErrorAlert("Error !!", "Can't able to create Output Folder", "Please check the permission");
             }
         }
-        DataExportBean.jobOutputPath = outputPathTextField.getText() + File.separator + new File(DataExportBean.dataFilePath).getName().split("\\.")[0] + "-Child Tables";
+        String folderName = new File(DataExportBean.dataFilePath).getName();
+        DataExportBean.jobOutputPath = outputPathTextField.getText() + File.separator + folderName.substring(0, folderName.lastIndexOf(".")) + "-Child Tables";
         if (!new File(DataExportBean.jobOutputPath).isDirectory()) {
             new File(DataExportBean.jobOutputPath).mkdir();
             if (!new File(DataExportBean.jobOutputPath).isDirectory()) {

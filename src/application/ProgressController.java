@@ -13,7 +13,6 @@ import javafx.scene.control.Label;
 import javafx.stage.Stage;
 import org.apache.log4j.Logger;
 import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -24,6 +23,7 @@ import java.io.*;
 import java.net.URL;
 import java.util.List;
 import java.util.*;
+import java.util.concurrent.ForkJoinPool;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -43,6 +43,9 @@ public class ProgressController implements Initializable {
     private JFXButton cancelButton;
     @FXML
     public Label progressStatusLabel;
+
+    @FXML
+    public Label statusLabel;
     @FXML
     public Label progressLabel;
 
@@ -54,6 +57,7 @@ public class ProgressController implements Initializable {
     private Map<String, ICSVWriter> tableICSVWriterMap = new LinkedHashMap<>();
     private Map<String, List<String>> tableWithHeaderList = new LinkedHashMap<>();
     private Map<String, Boolean> isHeaderAddedInFile = new LinkedHashMap<>();
+    private Map<String, Long> tableRowCount = new LinkedHashMap<>();
 
     private final static String CSV = ".csv";
     private final static String ROOT_TABLE = "main_table";
@@ -63,6 +67,7 @@ public class ProgressController implements Initializable {
     private static String EXCEL = ".xlsx";
     private static String splitRegex = ",(?=([^\"]*\"[^\"]*\")*[^\"]*$)";
     private long headerLastPosition;
+    long CHUNK_SIZE = 500;
 
     private CSVParser parser = new CSVParserBuilder().withSeparator(',')
             .withFieldAsNull(CSVReaderNullFieldIndicator.BOTH).withIgnoreLeadingWhiteSpace(true)
@@ -70,6 +75,8 @@ public class ProgressController implements Initializable {
 
     private static Logger LOGGER = Logger.getLogger(DataExportController.class);
     private static boolean wholeProcessCompleted;
+    int THREAD_CAPACITY = Runtime.getRuntime().availableProcessors() * 2; // sufficent usgae of threads ...
+    ForkJoinPool customThreadPool = new ForkJoinPool(THREAD_CAPACITY);
 
     @PostConstruct
     public void init() {
@@ -78,6 +85,7 @@ public class ProgressController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
 
+        ForkJoinPool customThreadPool = new ForkJoinPool(THREAD_CAPACITY);
         wholeProcessCompleted = false;
         progressBar.setStyle("-fx-accent:  #1565c0;");
         progressStatusLabel.setText("0 %");
@@ -88,7 +96,6 @@ public class ProgressController implements Initializable {
         headerLastPosition = DataExportBean.headerLastPosition;
         progress_status = 0.0;
         cancelButton.setText("Cancel");
-        // progressLabel.setText("Please wait , Step 1 of Step 3");
         DataExportBean.currentThread = new Thread(this::startProcess);
         Platform.runLater(
                 () -> {
@@ -101,16 +108,19 @@ public class ProgressController implements Initializable {
     private void startProcess() {
 
         Platform.runLater(() -> {
-            if (isMultipleCsvFile) {
+            if (isMultipleCsvFile && isRefactorFile) {
                 progressLabel.setText("Please wait , Step 1 of Step 2");
-            } else {
+            } else if (isMultipleCsvFile) {
+                progressLabel.setText("Please wait , Step 1 of Step 1");
+            } else if (isRefactorFile) {
                 progressLabel.setText("Please wait , Step 1 of Step 3");
+            } else {
+                progressLabel.setText("Please wait , Step 1 of Step 2");
             }
         });
         String refactorDataPath = dataLocation;
         double noOfLines = 0;
         if (isRefactorFile) {
-
             RefactorProcess refactorProcess = new RefactorProcess(refactorDataPath, outputLocation, progress_status, progressStatusLabel, progressBar);
             refactorDataPath = refactorProcess.startRefactoring();
             noOfLines = refactorProcess.getTotalNumberOfLines();
@@ -121,27 +131,47 @@ public class ProgressController implements Initializable {
         progress_status = 0.0;
         updateProgress();
         Platform.runLater(() -> {
-            if (isMultipleCsvFile) {
+            if (isMultipleCsvFile && isRefactorFile) {
+                progressLabel.setText("Please wait , Step 2 of Step 2");
+            } else if (isMultipleCsvFile) {
+                progressLabel.setText("Please wait , Step 1 of Step 1");
+            } else if (isRefactorFile) {
+                progressLabel.setText("Please wait , Step 2 of Step 3");
+            } else {
+                progressLabel.setText("Please wait , Step 1 of Step 2");
+            }
+
+            /*if (isMultipleCsvFile) {
                 progressLabel.setText("Please wait , Step 2 of Step 2");
             } else {
                 progressLabel.setText("Please wait , Step 2 of Step 3");
-            }
+            }*/
         });
         if (noOfLines != 0) {
             double progress_status_increment_row = 1.0 / noOfLines;
             Map<Integer, String> tableListWithPosition = null;
             try {
                 CSVReader csvReader = new CSVReaderBuilder(new FileReader(refactorDataPath)).withCSVParser(parser).build();
-                int count = 0;
+                long count = 0;
                 String[] line = null;
+
                 while ((line = csvReader.readNext()) != null) {
+                    long finalCount = count;
+                    Platform.runLater(() -> {
+                        statusLabel.setText("Processing Line No :" + finalCount);
+                    });
                     if (count == 0) {
                         tableListWithPosition = determineAllTables(Arrays.asList(line));
                         initializePrintWriterForAllTables(tableListWithPosition);
                     }
                     if (count != 0) {
                         List<String> values = Arrays.asList(line);
-                        if (!values.isEmpty()) {
+                       /* if (values.size() < tableWithHeaderList.get(ROOT_TABLE).size()) {
+                            LOGGER.debug("Values Size :" + values.size());
+                            LOGGER.debug("Values Size :" + tableWithHeaderList.get(ROOT_TABLE).size());
+                            LOGGER.debug("Main Table Values Missing at line no :" + count);
+                        }*/
+                        if (!values.isEmpty() && values.size() > tableWithHeaderList.get(ROOT_TABLE).size()) {
                             List<String> rootTableValues = Arrays.asList(line).subList(0, tableWithHeaderList.get(ROOT_TABLE).size());
                             for (Map.Entry<Integer, String> childTable : tableListWithPosition.entrySet()) {
                                 if (values.get(childTable.getKey()) == null) {
@@ -155,7 +185,6 @@ public class ProgressController implements Initializable {
                                         List<String> headerLineWriterList = new ArrayList();
                                         headerLineWriterList.addAll(tableWithHeaderList.get(ROOT_TABLE));
                                         headerLineWriterList.add("");
-
                                         headerLineWriterList.addAll(Arrays.asList(tableHeader.split(splitRegex)).stream().map(header -> header.replace("\"", ""))
                                                 .collect(Collectors.toList()));
                                         tableICSVWriterMap.get(childTable.getValue()).writeNext(headerLineWriterList.toArray(new String[headerLineWriterList.size()]));
@@ -176,8 +205,8 @@ public class ProgressController implements Initializable {
                                         for (String rowValue : tableRowContent[i].split(splitRegex)) {
                                             valueLineWriterList.add(rowValue.replace("\"", ""));
                                         }
-                                        tableICSVWriterMap.get(childTable.getValue())
-                                                .writeNext(valueLineWriterList.toArray(new String[valueLineWriterList.size()]));
+                                        tableICSVWriterMap.get(childTable.getValue()).writeNext(valueLineWriterList.toArray(new String[valueLineWriterList.size()]));
+                                        tableRowCount.put(childTable.getValue(), tableRowCount.get(childTable.getValue()) + 1);
                                     }
                                 }
                             }
@@ -187,7 +216,6 @@ public class ProgressController implements Initializable {
                     progress_status += progress_status_increment_row;
                     progress_status = progress_status >= 1.0 ? 1.0 : progress_status;
                     updateProgress();
-                    // progressStatusInfo(progress_status);
                 }
             } catch (IOException | CsvValidationException e) {
                 LOGGER.error("Write Data into Separate CSV file", e.fillInStackTrace());
@@ -216,7 +244,6 @@ public class ProgressController implements Initializable {
             }
             if (isMultipleCsvFile) {
                 progress_status += 0.5;
-                // progressStatusInfo(progress_status);
                 progress_status = progress_status >= 1.0 ? 1.0 : progress_status;
                 wholeProcessCompleted = true;
                 updateProgress();
@@ -293,22 +320,13 @@ public class ProgressController implements Initializable {
     private void updateProgress() {
         Platform.runLater(() -> {
             String progressValue = "";
+            progressBar.setProgress(progress_status);
+            progressValue = String.valueOf(progress_status * 100).split("\\.")[0] + " %";
+            progressStatusLabel.setText(progressValue);
             if (progress_status >= 1.0 && wholeProcessCompleted) {
-                FilenameFilter filter = (dir, name) -> name.endsWith(".csv");
-                try {
-                    Thread.sleep(5000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                progressBar.setProgress(progress_status);
-                progressValue = String.valueOf(progress_status * 100).split("\\.")[0] + " %";
-                progressStatusLabel.setText(progressValue);
+                statusLabel.setText(" ");
                 cancelButton.setText("OK");
                 progressLabel.setText("Job Completed");
-            } else {
-                progressBar.setProgress(progress_status);
-                progressValue = String.valueOf(progress_status * 100).split("\\.")[0] + " %";
-                progressStatusLabel.setText(progressValue);
             }
         });
     }
@@ -344,6 +362,7 @@ public class ProgressController implements Initializable {
         for (String table : tableList.values()) {
             try {
                 tableICSVWriterMap.put(table, new CSVWriterBuilder(new FileWriter(outputLocation + File.separator + "TABLE_" + table + CSV)).withParser(parser).build());
+                tableRowCount.put(table, (long) 0);
             } catch (IOException e) {
                 LOGGER.error("Create File Writer for this table : " + table, e.fillInStackTrace());
                 ErrorAlert("ERROR !!", "Create File Writer for this table : " + table, e.getMessage());
@@ -377,40 +396,55 @@ public class ProgressController implements Initializable {
     }
 
     public void convertCsvToExcel() {
+        LOGGER.debug("Table Rwo Count :" + tableRowCount);
         double fileProgressStatus = 1.0 / childTableCount;
+        double tableFileProcessStatus;
         File folder = new File(outputLocation);
+
         XSSFWorkbook workbook = new XSSFWorkbook();
         File processingFile = null;
+        Sheet sheet = null;
         try {
             for (File file : folder.listFiles()) {
                 if (file.isFile()) {
-                    //    LOGGER.debug("Current Csv File :" + file.getName());
+                    LOGGER.debug("Current Csv File :" + file.getName() + " start processing");
+                    String tableName = file.getName().substring(6).split("\\.")[0];
+                    tableFileProcessStatus = fileProgressStatus / tableRowCount.get(tableName);
                     processingFile = file;
-                    ArrayList<String> al = null;
-                    ArrayList<ArrayList<String>> arlist = new ArrayList<>();
-                    Sheet sheet = workbook.createSheet(file.getName().split("\\.")[0]);
+                    sheet = workbook.createSheet(file.getName().split("\\.")[0]);
                     CSVReader csvReader = new CSVReaderBuilder(new FileReader(file.getAbsoluteFile()))
                             .withCSVParser(parser).build();
                     String[] line = null;
+                    long rownum = 0;
                     while ((line = csvReader.readNext()) != null) {
-                        al = new ArrayList<>();
-                        for (int j = 0; j < line.length; j++) {
-                            for (int k = 0; k < arlist.size(); k++) {
-                                ArrayList<String> ardata = arlist.get(k);
-                                Row row = sheet.createRow((short) k);
-                                for (int p = 0; p < ardata.size(); p++) {
-                                    Cell cell = row.createCell((short) p);
-                                    setCellTypeAndValue(ardata.get(p), p, cell);
-                                }
-                            }
-                            al.add(line[j]);
+                        Long finalRownum = rownum;
+                        Platform.runLater(() -> {
+                            statusLabel.setText("File Name :" + file.getName().split("\\.")[0] + "  line :" + finalRownum);
+                        });
+                        Row row = sheet.createRow(Math.toIntExact(rownum++));
+                        int cellnum = 0;
+                        for (String obj : line) {
+                            Cell cell = row.createCell(cellnum++);
+                            cell.setCellValue(obj);
                         }
-                        arlist.add(al);
+                        //re assign the sheet exceeds chunk size
+                        if (rownum % CHUNK_SIZE == 0) {
+                            FileOutputStream fileOut = new FileOutputStream(outputLocation + File.separator + new File(dataLocation).getName().split("\\.")[0] + EXCEL);
+                            workbook.write(fileOut);
+                            fileOut.flush();
+                            fileOut.close();
+                            sheet = workbook.getSheet(file.getName().split("\\.")[0]);
+                        }
+                        progress_status += tableFileProcessStatus;
+                        progress_status = progress_status >= 1.0 ? 1.0 : progress_status;
+                        updateProgress();
                     }
                     csvReader.close();
+                    LOGGER.debug("Current Csv File  :" + file.getName() + " processed");
                     updateDataIntoWorkBook(fileProgressStatus, workbook, file);
                 }
             }
+            wholeProcessCompleted = true;
         } catch (FileNotFoundException e) {
             LOGGER.error("Error occurred While data write into an excel file ," + "Processing File Name :" + processingFile.getName() +
                     "\n" + e.getMessage());
@@ -434,7 +468,6 @@ public class ProgressController implements Initializable {
         workbook.write(fileOut);
         fileOut.flush();
         fileOut.close();
-
         if (file.delete()) {
             progress_status += fileProgressStatus;
             progress_status = progress_status >= 1.0 ? 1.0 : progress_status;
@@ -442,27 +475,7 @@ public class ProgressController implements Initializable {
                 wholeProcessCompleted = true;
             }
             updateProgress();
-            // progressStatusInfo(progress_status);
         }
-    }
-
-    private void setCellTypeAndValue(String ardata, int p, Cell cell) {
-        cell.setCellType(isInteger(ardata) ? CellType.NUMERIC : CellType.STRING);
-        cell.setCellValue(ardata);
-    }
-
-   /* public void progressStatusInfo(double time) {
-        progress_status = time >= 1.0 ? 1.0 : time;
-        updateProgress();
-    }*/
-
-    public static boolean isInteger(String s) {
-        try {
-            Integer.parseInt(s);
-        } catch (NumberFormatException e) {
-            return false;
-        }
-        return true;
     }
 
 

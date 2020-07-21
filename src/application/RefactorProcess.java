@@ -55,15 +55,14 @@ public class RefactorProcess {
         FileWriter fileWriter = null;
         long countNoOfLines = 0;
         try {
-            progress_status += 0.2;
-            progress_status = progress_status >= 1.0 ? 1.0 : progress_status;
-            updateProgress();
             countReader = new CSVReaderBuilder(new FileReader(dataFilePath)).withCSVParser(parser).build();
             String[] line = null;
             while ((line = countReader.readNext()) != null) {
                 countNoOfLines++;
             }
-
+            progress_status += 0.2;
+            progress_status = progress_status >= 1.0 ? 1.0 : progress_status;
+            updateProgress();
             double progress_status_increment_row = 0.8 / countNoOfLines;
             line = null;
             fileWriter = new FileWriter(refactorFileName);
@@ -71,8 +70,10 @@ public class RefactorProcess {
             csvReader = new CSVReaderBuilder(new FileReader(dataFilePath)).withCSVParser(parser).build();
 
             while ((line = csvReader.readNext()) != null) {
+
                 List<String> lineValuesList = Arrays.asList(line);
                 List<String> modifiedList = new ArrayList<>();
+
                 for (String lineList : lineValuesList) {
                     if (lineList == null) {
                         modifiedList.add("");
